@@ -1,15 +1,16 @@
-import { useRef, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import {
   motion,
-  useScroll,
   useTransform,
   useSpring,
+  useMotionValue,
+  animate,
   type MotionValue,
 } from "motion/react";
 import { Link } from "@tanstack/react-router";
 
 /**
- * Scroll choreography (0 → 1):
+ * Preloader choreography (0 → 1, loops)
  * 0.00 – 0.15   Start on envelope back. Camera pushes in tight on the wax seal.
  * 0.15 – 0.19   Tension builds — seal inhales, aura intensifies.
  * 0.19 – 0.28   CRACK. Lightning fractures radiate, card shudders, shards erupt.
@@ -20,32 +21,33 @@ import { Link } from "@tanstack/react-router";
  * 0.85 – 1.00   Invitation typography and flourishes gracefully stagger into view.
  */
 export function InvitationExperience() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-  const p = useSpring(scrollYProgress, {
+  const rawProgress = useMotionValue(0);
+
+  useEffect(() => {
+    const controls = animate(rawProgress, 1, {
+      duration: 20, // total cycle duration (seconds)
+      ease: "linear",
+      repeat: Infinity,
+      repeatType: "loop",
+    });
+    return controls.stop;
+  }, [rawProgress]);
+
+  const p = useSpring(rawProgress, {
     stiffness: 90,
     damping: 22,
     mass: 0.6,
   });
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative h-[560vh] cinematic-bg"
-      aria-label="Impressions Wedding Cards"
-    >
-      <div className="sticky top-0 h-screen w-full overflow-hidden vignette grain">
-        <Ambience progress={p} />
-        <GalaxyBackground progress={p} />   {/* ← Galaxy stars always visible */}
-        <FloatingNav progress={p} />
-        <Stage progress={p} />
-        <ScrollHint progress={p} />
-        <FooterMark progress={p} />
-      </div>
-    </section>
+    <div className="fixed inset-0 overflow-hidden cinematic-bg vignette grain">
+      <Ambience progress={p} />
+      <GalaxyBackground progress={p} />
+      <FloatingNav progress={p} />
+      <Stage progress={p} />
+      <ScrollHint progress={p} />
+      <FooterMark progress={p} />
+    </div>
   );
 }
 
@@ -831,13 +833,14 @@ function CornerFlourish({ className = "" }: { className?: string }) {
     </svg>
   );
 }
+
 function GalaxyBackground({ progress }: { progress: MotionValue<number> }) {
   const stars = useMemo(() => {
     const items = [];
     for (let i = 0; i < 80; i++) {
       const left = Math.random() * 100;
       const top = Math.random() * 100;
-      const size = 6 + Math.random() * 10;          // star diameter 6‑16px
+      const size = 6 + Math.random() * 10;
       const duration = 18 + Math.random() * 22;
       const delay = Math.random() * 15;
 
@@ -908,7 +911,6 @@ function GalaxyBackground({ progress }: { progress: MotionValue<number> }) {
           </svg>
         </motion.div>
       ))}
-      
     </motion.div>
   );
 }
