@@ -1,52 +1,23 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import {
   motion,
   useTransform,
-  useSpring,
-  useMotionValue,
-  animate,
   type MotionValue,
 } from "motion/react";
 import { Link } from "@tanstack/react-router";
 
 /**
- * Preloader choreography (0 → 1, loops)
- * 0.00 – 0.15   Start on envelope back. Camera pushes in tight on the wax seal.
- * 0.15 – 0.19   Tension builds — seal inhales, aura intensifies.
- * 0.19 – 0.28   CRACK. Lightning fractures radiate, card shudders, shards erupt.
- * 0.28 – 0.40   Camera pulls back to reveal the full envelope again.
- * 0.40 – 0.55   The top flap peels open on rotateX.
- * 0.55 – 0.70   The invitation card slides vertically out of the envelope folds.
- * 0.70 – 0.85   The envelope falls away and fades; the card settles into the center viewport.
- * 0.85 – 1.00   Invitation typography and flourishes gracefully stagger into view.
+ * InvitationScene – renders the full cinematic experience driven by a `progress` MotionValue.
+ * Use with progress 0→1 for preloader, or progress=1 for the static hero.
  */
-export function InvitationExperience() {
-  const rawProgress = useMotionValue(0);
-
-  useEffect(() => {
-    const controls = animate(rawProgress, 1, {
-      duration: 20, // total cycle duration (seconds)
-      ease: "linear",
-      repeat: Infinity,
-      repeatType: "loop",
-    });
-    return controls.stop;
-  }, [rawProgress]);
-
-  const p = useSpring(rawProgress, {
-    stiffness: 90,
-    damping: 22,
-    mass: 0.6,
-  });
-
+export function InvitationScene({ progress }: { progress: MotionValue<number> }) {
   return (
-    <div className="fixed inset-0 overflow-hidden cinematic-bg vignette grain">
-      <Ambience progress={p} />
-      <GalaxyBackground progress={p} />
-      <FloatingNav progress={p} />
-      <Stage progress={p} />
-      <ScrollHint progress={p} />
-      <FooterMark progress={p} />
+    <div className="relative w-full h-full overflow-hidden cinematic-bg vignette grain">
+      <Ambience progress={progress} />
+      <FloatingNav progress={progress} />
+      <Stage progress={progress} />
+      <ScrollHint progress={progress} />
+      <FooterMark progress={progress} />
     </div>
   );
 }
@@ -728,50 +699,58 @@ function InvitationInside({ progress }: { progress: MotionValue<number> }) {
           style={{ opacity: ctaOp, y: ctaY }}
           className="mt-6 flex items-center gap-3 sm:gap-4"
         >
-<Link
-  to="/customise"
-  className="inline-flex items-center justify-center transition-all duration-500 hover:-translate-y-0.5 hover:brightness-110"
-  style={{
-    padding: "0.55rem 1.5rem",
-    borderRadius: "999px",
-    fontSize: "clamp(8px, 1vw, 9.5px)",
-    letterSpacing: "0.34em",
-    textTransform: "uppercase",
-    fontWeight: 500,
-    background: "linear-gradient(180deg, var(--royal) 0%, var(--royal-deep) 100%)",
-    color: "var(--pearl)",
-    boxShadow: "0 12px 24px -8px color-mix(in oklab, var(--royal) 75%, transparent), inset 0 1px 0 oklch(1 0 0 / 0.28)",
-  }}
->
-  Customise Your Card
-</Link>
+          <Link
+            to="/customise"
+            className="inline-flex items-center justify-center transition-all duration-500 hover:-translate-y-0.5 hover:brightness-110"
+            style={{
+              padding: "0.55rem 1.5rem",
+              borderRadius: "999px",
+              fontSize: "clamp(8px, 1vw, 9.5px)",
+              letterSpacing: "0.34em",
+              textTransform: "uppercase",
+              fontWeight: 500,
+              background:
+                "linear-gradient(180deg, var(--royal) 0%, var(--royal-deep) 100%)",
+              color: "var(--pearl)",
+              boxShadow:
+                "0 12px 24px -8px color-mix(in oklab, var(--royal) 75%, transparent), inset 0 1px 0 oklch(1 0 0 / 0.28)",
+            }}
+          >
+            Customise Your Card
+          </Link>
 
-<a
-  href="#portfolio"
-  onClick={(e) => {
-    e.preventDefault();
-    document.getElementById("portfolio")?.scrollIntoView({ behavior: "smooth" });
-  }}
-  className="inline-flex items-center justify-center transition-all duration-500 hover:-translate-y-0.5"
-  style={{
-    padding: "0.55rem 1.5rem",
-    borderRadius: "999px",
-    fontSize: "clamp(8px, 1vw, 9.5px)",
-    letterSpacing: "0.34em",
-    textTransform: "uppercase",
-    fontWeight: 500,
-    border: "0.75px solid color-mix(in oklab, var(--royal-deep) 38%, transparent)",
-    color: "var(--royal-deep)",
-    background: "transparent",
-  }}
->
-  Our Portfolio
-</a>
+          <a
+            href="#portfolio"
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .getElementById("portfolio")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="inline-flex items-center justify-center transition-all duration-500 hover:-translate-y-0.5"
+            style={{
+              padding: "0.55rem 1.5rem",
+              borderRadius: "999px",
+              fontSize: "clamp(8px, 1vw, 9.5px)",
+              letterSpacing: "0.34em",
+              textTransform: "uppercase",
+              fontWeight: 500,
+              border:
+                "0.75px solid color-mix(in oklab, var(--royal-deep) 38%, transparent)",
+              color: "var(--royal-deep)",
+              background: "transparent",
+            }}
+          >
+            Our Portfolio
+          </a>
         </motion.div>
       </div>
 
       {/* Corner flourishes */}
-      <motion.div style={{ opacity: flourishOp }} className="absolute inset-0 pointer-events-none">
+      <motion.div
+        style={{ opacity: flourishOp }}
+        className="absolute inset-0 pointer-events-none"
+      >
         <CornerFlourish className="top-5 left-5" />
         <CornerFlourish className="top-5 right-5 rotate-90" />
         <CornerFlourish className="bottom-5 right-5 rotate-180" />
@@ -834,7 +813,10 @@ function CornerFlourish({ className = "" }: { className?: string }) {
   );
 }
 
-function GalaxyBackground({ progress }: { progress: MotionValue<number> }) {
+/* ------------------------------------------------------------------ */
+/* Galaxy Background (exported, no changes)                           */
+/* ------------------------------------------------------------------ */
+export function GalaxyBackground({ progress }: { progress: MotionValue<number> }) {
   const stars = useMemo(() => {
     const items = [];
     for (let i = 0; i < 80; i++) {
